@@ -1,3 +1,4 @@
+# question 1.a
 provider "aws" {
   profile = "default"
   region  = "us-east-1"
@@ -5,23 +6,6 @@ provider "aws" {
 
 data "aws_availability_zones" "available" {
   state = "available"
-}
-
-resource "aws_vpc" "my_vpc" {
-  cidr_block           = "10.0.0.0/16"
-  enable_dns_hostnames = true
-}
-
-resource "aws_subnet" "public_us_east_1a" {
-  vpc_id            = "${aws_vpc.my_vpc.id}"
-  cidr_block        = "10.0.0.0/24"
-  availability_zone = "us-east-1a"
-}
-
-resource "aws_subnet" "public_us_east_1b" {
-  vpc_id            = "${aws_vpc.my_vpc.id}"
-  cidr_block        = "10.0.0.0/24"
-  availability_zone = "us-east-1b"
 }
 
 resource "aws_security_group" "webservers" {
@@ -74,37 +58,35 @@ resource "aws_instance" "second" {
   }
 }
 
-resource "aws_lb" "hw1" {
-  name               = "hw1-terraform-alb"
+resource "aws_elb" "elb-hw1" {
+  name               = "elb-hw1"
+  availability_zones = ["${aws_instance.first.availability_zone}", "${aws_instance.second.availability_zone}"]
   security_groups    = ["${aws_security_group.webservers.id}"]
-  load_balancer_type = "application"
-  subnets            = ["${aws_subnet.public_us_east_1a.id}", "${aws_subnet.public_us_east_1b.id}"]
 
-  tags = {
-    Name = "hw1-terraform-alb"
+  listener {
+    instance_port     = 22
+    instance_protocol = "http"
+    lb_port           = 80
+    lb_protocol       = "http"
   }
+
+  health_check {
+    healthy_threshold   = 2
+    unhealthy_threshold = 2
+    timeout             = 3
+    target              = "HTTP:22/"
+    interval            = 30
+  }
+
+  instances                   = ["${aws_instance.first.id}", "${aws_instance.second.id}"]
+  cross_zone_load_balancing   = true
+  idle_timeout                = 100
+  connection_draining         = true
+  connection_draining_timeout = 300
 }
 
-resource "aws_lb_target_group_attachment" "tg-first-attachment" {
-  target_group_arn = "${aws_lb_target_group.lb-target.arn}"
-  target_id        = "${aws_instance.first.id}"
-  port             = 22
-}
-
-resource "aws_lb_target_group_attachment" "tg-second-attachment" {
-  target_group_arn = "${aws_lb_target_group.lb-target.arn}"
-  target_id        = "${aws_instance.second.id}"
-  port             = 22
-}
-
-resource "aws_lb_target_group" "lb-target" {
-  name     = "hw1-lb-target-group"
-  port     = 22
-  protocol = "HTTP"
-  vpc_id   = "${aws_vpc.my_vpc.id}"
-}
-
-resource "aws_db_instance" "hw1" {
+# question 1.b
+resource "aws_db_instance" "db-hw1" {
   allocated_storage      = 20
   storage_type           = "gp2"
   engine                 = "postgres"
@@ -116,3 +98,31 @@ resource "aws_db_instance" "hw1" {
   skip_final_snapshot    = "true"
   vpc_security_group_ids = ["${aws_security_group.webservers.id}"]
 }
+
+# question 1.c
+# resource "aws_launch_configuration" "launch-config" {
+#   image_id        = "ami-2757f631"
+#   instance_type   = "t2.micro"
+#   security_groups = ["${aws_security_group.webservers.id}"]
+
+#   lifecycle {
+#     create_before_destroy = true
+#   }
+# }
+
+# resource "aws_autoscaling_group" "asg-hw1" {
+#   launch_configuration = "${aws_launch_configuration.launch-config.name}"
+#   availability_zones = ["${data.aws_availability_zone.available.name}"]
+
+#   target_group_arns = ["${var.target_group_arn}"]
+#   health_check_type = "EC2"
+
+#   min_size = 2
+#   max_size = 4
+
+#   tag {
+#     key                 = "Name"
+#     value               = "my-asg"
+#     propagate_at_launch = true
+#   }
+# }
