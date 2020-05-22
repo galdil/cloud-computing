@@ -3,7 +3,7 @@ const path = require("path");
 const app = express();
 
 app.get("/", function (req, res) {
-  res.status(200).sendFile(path.join(__dirname + "/index.html"));
+  res.status(200).sendFile(path.join(__dirname + "/client/index.html"));
 });
 
 const port = process.env.port || 8080;
