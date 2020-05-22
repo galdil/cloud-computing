@@ -1,0 +1,4 @@
+terraform/AWSCLIV2.pkg
+terraform/q1.tf.save
+*.tfstate*
+.terraform
