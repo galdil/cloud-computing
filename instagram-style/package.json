@@ -10,6 +10,7 @@
   "author": "Gal dayagi",
   "license": "ISC",
   "dependencies": {
+    "aws-sdk": "^2.682.0",
     "express": "^4.17.1"
   }
 }

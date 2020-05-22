@@ -3,3 +3,4 @@ terraform/q1.tf.save
 *.tfstate*
 .terraform
 node_modules
+config.js
