@@ -1,16 +1,34 @@
+const localhostUrl = "http://localhost:8080/";
 const fetchPhotos = (async () => {
-  const response = await fetch("http://localhost:8080/photos");
-  let photos = await response.json();
+  const response = await fetch(`${localhostUrl}photos`);
+  const photos = await response.json();
   const gallery = document.getElementById("gallery");
 
   photos.map((photo) => {
-    let img = document.createElement("img");
+    const img = document.createElement("img");
     img.src = photo;
     img.className = "gallery-item";
 
-    let imageContainer = document.createElement("div");
+    const imageContainer = document.createElement("div");
 
     imageContainer.appendChild(img);
     gallery.appendChild(imageContainer);
   });
 })();
+
+const uploadPhoto = async () => {
+  const message = document.getElementById("upload-message");
+  message.innerHTML = "loading...";
+
+  let formData = new FormData();
+  const imageFile = document.getElementById("image-input").files[0];
+  formData.append("imageFile", imageFile);
+
+  const response = await fetch(`${localhostUrl}photo`, {
+    method: "POST",
+    body: formData,
+  });
+
+  let res = await response.json();
+  message.innerHTML = res.success ? `${res.success} uploaded!` : res.error;
+};

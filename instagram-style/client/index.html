@@ -5,5 +5,19 @@
 </head>
 <body>
   <div class="title">Foodies</div>
+  <div class="image-upload">
+    <label class="upload-title">UPLOAD YOUR FOOD</label>
+    <label for="image-input">
+      <img class="icon-upload" src="./assets/upload-icon.png" />
+    </label>
+    <input
+      id="image-input"
+      class="input-file"
+      type="file"
+      accept="image/*"
+      onchange="uploadPhoto()"
+    />
+    <div id="upload-message"></div>
+  </div>
   <div id="gallery"></div>
 </body>

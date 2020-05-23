@@ -3,16 +3,21 @@ const AWS = require("aws-sdk");
 const path = require("path");
 const app = express();
 const config = require("./config.js");
+const bodyParser = require("body-parser");
+const fileUpload = require("express-fileupload");
 
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, "client")));
+app.use(fileUpload());
 
-const awsConfig = new AWS.Config({
+const s3 = new AWS.S3();
+
+AWS.config.update({
   accessKeyId: config.accessKeyId,
   secretAccessKey: config.secretAccessKey,
   region: config.region,
 });
-
-const s3 = new AWS.S3();
 
 const bucketParams = {
   Bucket: "insta-style-bucket",
@@ -25,6 +30,7 @@ app.get("/", (req, res) => {
 app.get("/photos", async (req, res) => {
   let urls = [];
   const photos = await s3.listObjectsV2(bucketParams).promise();
+
   await Promise.all(
     photos.Contents.map(async (photo) => {
       const url = await s3.getSignedUrl("getObject", {
@@ -35,13 +41,24 @@ app.get("/photos", async (req, res) => {
       urls.push(url);
     })
   );
-  console.log(urls);
+
   res.send(urls);
 });
 
 app.post("/photo", async (req, res) => {
-  s3.upload(bucketParams, () => {});
-  res.status(200).sendFile("index.html");
+  try {
+    let image = req.files.imageFile;
+
+    let response = await s3
+      .upload({ ...bucketParams, Key: image.name, Body: image.data })
+      .promise();
+
+    console.log(response.key);
+    await res.send({ success: response.key });
+  } catch (e) {
+    console.log(e);
+    res.send({ error: e });
+  }
 });
 
 const port = process.env.port || 8080;

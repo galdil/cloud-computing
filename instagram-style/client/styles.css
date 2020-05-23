@@ -5,6 +5,10 @@
   row-gap: 10px;
 }
 
+#upload-message {
+  margin-right: 115px;
+}
+
 .title {
   text-align: center;
   font-size: 40px;
@@ -14,4 +18,25 @@
   height: 220px;
   width: auto;
   max-width: 300px;
+}
+
+.input-file {
+  display: none;
+}
+
+.image-upload {
+  text-align: right;
+}
+
+.icon-upload {
+  height: 30px;
+  cursor: pointer;
+  margin-right: 12px;
+  margin-bottom: 10px;
+}
+
+.upload-title {
+  position: relative;
+  bottom: 14px;
+  font-family: serif;
 }
