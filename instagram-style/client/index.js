@@ -1,4 +1,5 @@
 const localhostUrl = "http://localhost:8080/";
+
 const fetchPhotos = (async () => {
   const response = await fetch(`${localhostUrl}photos`);
   const photos = await response.json();

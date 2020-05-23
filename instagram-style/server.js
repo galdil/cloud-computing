@@ -27,6 +27,7 @@ app.get("/", (req, res) => {
   res.status(200).sendFile("index.html");
 });
 
+// get all the photos in the bucket
 app.get("/photos", async (req, res) => {
   let urls = [];
   const photos = await s3.listObjectsV2(bucketParams).promise();
@@ -45,6 +46,7 @@ app.get("/photos", async (req, res) => {
   res.send(urls);
 });
 
+// the upload route to upload file to s3
 app.post("/photo", async (req, res) => {
   try {
     let image = req.files.imageFile;
