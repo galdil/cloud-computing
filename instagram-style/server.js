@@ -7,17 +7,17 @@ const bodyParser = require("body-parser");
 const fileUpload = require("express-fileupload");
 
 app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, "client")));
 app.use(fileUpload());
 
-const s3 = new AWS.S3();
-
-AWS.config.update({
+const myconfig = new AWS.Config();
+myconfig.update({
   accessKeyId: config.accessKeyId,
   secretAccessKey: config.secretAccessKey,
   region: config.region,
 });
+
+const s3 = new AWS.S3(myconfig);
 
 const bucketParams = {
   Bucket: "insta-style-bucket",
@@ -36,7 +36,7 @@ app.get("/photos", async (req, res) => {
     photos.Contents.map(async (photo) => {
       const url = await s3.getSignedUrl("getObject", {
         Key: photo.Key,
-        Expires: 60 * 5,
+        Expires: 60 * 50,
         ...bucketParams,
       });
       urls.push(url);
@@ -63,7 +63,7 @@ app.post("/photo", async (req, res) => {
   }
 });
 
-const port = process.env.port || 8080;
+const port = process.env.port || 8000;
 
 app.listen(port, () => {
   console.log("App running at port: " + port);
